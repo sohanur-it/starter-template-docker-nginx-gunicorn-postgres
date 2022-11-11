@@ -1,0 +1,6 @@
+env/
+db.sqlite3
+.env
+.prod.env
+.idea/
+postgres_data/

@@ -1,0 +1,42 @@
+version: '3'
+
+services:
+  web:
+      build: .
+      command: >
+        sh -c "python manage.py collectstatic --no-input &&
+        gunicorn demo.wsgi:application --bind 0.0.0.0:8000"
+      expose:
+        - 8000
+      volumes:
+        - static_volume:/vol/web/static
+        - media_volume:/vol/web/media
+      env_file:
+        - .prod.env
+      depends_on:
+        - db
+  db:
+    image: postgres:12-alpine
+    environment:
+      - POSTGRES_DB=dev_db
+      - POSTGRES_USER=dev_user
+      - POSTGRES_PASSWORD=dev_pass
+    ports:
+      - 5432:5432
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+
+  nginx:
+    build: ./nginx
+    volumes:
+      - static_volume:/vol/web/static/
+      - media_volume:/vol/web/media/
+    ports:
+      - 82:80
+    depends_on:
+      - web
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:
